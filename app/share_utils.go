@@ -42,8 +42,8 @@ const (
 	// svgShieldCheck 盾牌+对勾：验证通过
 	svgShieldCheck = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`
 
-	// svgKey 钥匙：需要验证
-	svgKey = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>`
+	// svgShieldLock：盾牌 + 中央锁孔
+	svgShieldLock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="2"/><line x1="12" y1="13" x2="12" y2="16"/></svg>`
 
 	// svgLockOff 锁已关：分享禁用
 	svgLockOff = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><line x1="8" y1="15" x2="16" y2="19" stroke-dasharray="2 2"/></svg>`
@@ -51,10 +51,10 @@ const (
 	// svgXCircle 圆圈叉：验证失败
 	svgXCircle = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
 
-	// svgFileX 文件叉：文件不存在
-	svgFileX = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/><line x1="10" y1="13" x2="16" y2="19"/><line x1="16" y1="13" x2="10" y2="19"/></svg>`
+	// svgFileQuestion：文件存在但找不到，问号比叉号语义更准确
+	svgFileQuestion = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 14a2 2 0 0 1 4 0c0 1.5-2 1.5-2 3"/><circle cx="12" cy="19" r=".5" fill="currentColor"/></svg>`
 
-	// svgFolder 文件夹：公开目录
+	// svgFolder 文件夹：公开分享
 	svgFolder = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`
 )
 
@@ -109,10 +109,10 @@ func readDirFiles(dirPath string) []FileEntry {
 //
 // 访问流程：
 //  1. 未配置 share-password → 403 提示已锁定
-//  2. 未输入访问码 → 401 显示输入框
-//  3. 访问码错误  → 401 显示错误提示
-//  4. 访问码正确且无子路径 → 200 展示文件列表
-//  5. 访问码正确有子路径  → 返回文件内容
+//  2. 未输入分享码 → 401 显示输入框
+//  3. 分享码错误  → 401 显示错误提示
+//  4. 分享码正确且无子路径 → 200 展示文件列表
+//  5. 分享码正确有子路径  → 返回文件内容
 func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		inputCode := c.Param("code")
@@ -133,13 +133,13 @@ func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 			return
 		}
 
-		// ② 未输入访问码，显示输入框
+		// ② 未输入分享码，显示输入框
 		if inputCode == "" {
 			renderSharePage(c, http.StatusUnauthorized, SharePageData{
-				Title:       "加密订阅访问",
+				Title:       "加密分享",
 				HeaderColor: "var(--accent)",
-				HeaderIcon:  template.HTML(svgKey),
-				HeaderTitle: "请验证分享码",
+				HeaderIcon:  template.HTML(svgShieldLock),
+				HeaderTitle: "需要验证",
 				Description: template.HTML("此订阅目录受分享码保护，验证通过后可查看并复制订阅直链。"),
 				ShowInput:   true,
 				BadgeStyle:  "idle",
@@ -149,14 +149,14 @@ func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 			return
 		}
 
-		// ③ 访问码错误
+		// ③ 分享码错误
 		if !equalConstantTime(inputCode, serverPassword) {
 			renderSharePage(c, http.StatusUnauthorized, SharePageData{
 				Title:       "验证失败",
 				HeaderColor: "var(--danger)",
 				HeaderIcon:  template.HTML(svgXCircle),
-				HeaderTitle: "访问码不正确",
-				Description: template.HTML("您输入的访问码有误，请检查后重试。"),
+				HeaderTitle: "分享码错误",
+				Description: template.HTML("您输入的分享码有误，请检查后重试。"),
 				ShowInput:   true,
 				BadgeStyle:  "danger",
 				BadgeText:   "Auth Failed",
@@ -167,7 +167,7 @@ func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 		// ④ 验证通过，无子路径 → 展示文件列表
 		if relPath == "" || relPath == "/" {
 			renderSharePage(c, http.StatusOK, SharePageData{
-				Title:       "加密订阅访问",
+				Title:       "加密分享",
 				HeaderColor: "var(--success)",
 				HeaderIcon:  template.HTML(svgShieldCheck),
 				HeaderTitle: "验证成功",
@@ -193,12 +193,12 @@ func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 			renderSharePage(c, http.StatusNotFound, SharePageData{
 				Title:       "文件未找到",
 				HeaderColor: "var(--danger)",
-				HeaderIcon:  template.HTML(svgFileX),
+				HeaderIcon:  template.HTML(svgFileQuestion),
 				HeaderTitle: "文件不存在",
 				Description: template.HTML("请求的文件不存在或已被移除，请返回列表重新选择。"),
 				BadgeStyle:  "danger",
 				BadgeText:   "Not Found",
-				ShareCode:   serverPassword, // 保留访问码方便返回
+				ShareCode:   serverPassword, // 保留分享码方便返回
 			})
 			return
 		}
@@ -206,19 +206,19 @@ func (app *App) handleEncryptedShare(basePath string) gin.HandlerFunc {
 	}
 }
 
-// handleFileShare 处理公开目录 /more/*filepath（无鉴权）
+// handleFileShare 处理公开分享 /more/*filepath（无鉴权）
 func (app *App) handleFileShare(basePath string, _ bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		relPath := c.Param("filepath")
 
-		// 无子路径 → 显示公开目录提示（不列举文件）
+		// 无子路径 → 显示公开分享提示（不列举文件）
 		if relPath == "" || relPath == "/" {
 			renderSharePage(c, http.StatusOK, SharePageData{
-				Title:       "公开目录",
+				Title:       "公开分享",
 				HeaderColor: "var(--idle)",
 				HeaderIcon:  template.HTML(svgFolder),
 				HeaderTitle: "公开资源目录",
-				Description: template.HTML("此区域为无需鉴权的公开资源，文件列表已隐匿，请直接使用完整链接访问。"),
+				Description: template.HTML("无需鉴权，对应服务器目录 <code>output/more/</code>，文件列表已隐匿，请直接使用完整链接访问。"),
 				BadgeStyle:  "warning",
 				BadgeText:   "Public",
 				FooterText:  "Open Access",
@@ -238,7 +238,7 @@ func (app *App) handleFileShare(basePath string, _ bool) gin.HandlerFunc {
 			renderSharePage(c, http.StatusNotFound, SharePageData{
 				Title:       "文件未找到",
 				HeaderColor: "var(--danger)",
-				HeaderIcon:  template.HTML(svgFileX),
+				HeaderIcon:  template.HTML(svgFileQuestion),
 				HeaderTitle: "文件不存在",
 				Description: template.HTML("请求的公开文件不存在或已被移除。"),
 				BadgeStyle:  "danger",

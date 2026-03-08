@@ -63,6 +63,10 @@ func (app *App) initHTTPServer() error {
 	// 始终加载模板（share 页面不依赖 EnableWebUI）
 	router.SetHTMLTemplate(template.Must(template.New("").ParseFS(configFS, TemplatePattern)))
 
+	// 始终注册静态资源，share/files/analysis 页面依赖它们
+	staticSub, _ := fs.Sub(staticFS, "static")
+	router.StaticFS(StaticPrefix, http.FS(staticSub))
+
 	saver, err := method.NewLocalSaver()
 	if err != nil {
 		return fmt.Errorf("获取http监听目录失败: %w", err)
@@ -192,9 +196,6 @@ func (app *App) registerShareRoutes(router *gin.Engine, outputPath string) error
 // registerWebUIRoutes 注册WebUI路由
 func (app *App) registerWebUIRoutes(router *gin.Engine) {
 	slog.Info("启用Web控制面板", "path", "http://ip:port/admin", "api-key", config.GlobalConfig.APIKey)
-
-	staticSub, _ := fs.Sub(staticFS, "static")
-	router.StaticFS(StaticPrefix, http.FS(staticSub))
 
 	router.GET(AdminPath, func(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin.html", gin.H{

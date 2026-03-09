@@ -7,10 +7,10 @@
  *   const data = collectConfigForm();  // 保存前调用，返回完整配置对象
  */
 
-/* 
+/* ════════════════════════════════════════════════════════════
    Schema — 字段定义
    type: 'text' | 'password' | 'number' | 'toggle' | 'select' | 'chips' | 'url-list'
-*/
+════════════════════════════════════════════════════════════ */
 const SCHEMA = [
 
   // ── 检测 ────────────────────────────────────────────────
@@ -23,13 +23,13 @@ const SCHEMA = [
           {
             key: 'alive-concurrent', label: '测活并发', type: 'number',
             min: 0, max: 1000,
-            hint: '0 = 自动，建议 10–1000',
+            hint: '0 = 自动，建议 10–300，过高会超出路由器芯片处理能力',
             placeholder: '200',
           },
           {
             key: 'speed-concurrent', label: '测速并发', type: 'number',
             min: 0, max: 64,
-            hint: '0 = 自动，建议 4–32',
+            hint: '0 = 自动，建议 4–32，测速占用带宽，谨慎调高',
             placeholder: '8',
           },
           {
@@ -52,14 +52,14 @@ const SCHEMA = [
           {
             key: 'timeout', label: '超时时间 (ms)', type: 'number',
             min: 100, max: 60000,
-            hint: '节点延迟上限，建议 3000–30000',
-            placeholder: '10000',
+            hint: '节点延迟上限，建议 3000–10000，过短误杀稍高延迟节点',
+            placeholder: '6000',
           },
           {
             key: 'success-limit', label: '节点保存上限', type: 'number',
             min: 0,
             hint: '0 = 不限制',
-            placeholder: '0',
+            placeholder: '200',
           },
           {
             key: 'threshold', label: '相似度阈值', type: 'number',
@@ -79,9 +79,9 @@ const SCHEMA = [
         fields: [
           { key: 'rename-node', label: '重命名节点', hint: '启用后将根据节点 IP 归属地重命名', type: 'toggle' },
           { key: 'enhanced-tag', label: '增强位置标签', hint: '显示出口 + CDN 双位置', type: 'toggle' },
-          { key: 'isp-check', label: 'ISP 类型检测', hint: '检测原生 / 住宅 / 机房', type: 'toggle' },
-          { key: 'drop-bad-cf-nodes', label: '丢弃 CF 不可达', hint: '可能误杀，谨慎开启', type: 'toggle' },
-          { key: 'keep-success-proxies', label: '保留历次成功节点', hint: '防上游更新丢失节点', type: 'toggle' },
+          { key: 'isp-check', label: 'ISP 类型检测', hint: '检测原生 / 住宅 / 机房，会增加少量检测耗时', type: 'toggle' },
+          { key: 'drop-bad-cf-nodes', label: '丢弃 CF 不可达', hint: '可能误杀，谨慎开启，会导致可用节点明显减少', type: 'toggle' },
+          { key: 'keep-success-proxies', label: '保留历次成功节点', hint: '防上游更新丢失节点，强烈建议开启', type: 'toggle' },
         ],
       },
       {
@@ -99,7 +99,7 @@ const SCHEMA = [
         fields: [
           {
             key: 'node-type', label: '协议筛选', type: 'chips',
-            hint: '留空 = 检测全部协议',
+            hint: '留空 = 检测全部协议；设置后仅测试指定协议',
             options: ['ss', 'vmess', 'vless', 'trojan', 'hysteria', 'hy2', 'tuic'],
           },
           { key: 'ipv6', label: '启用 IPv6', type: 'toggle' },
@@ -118,18 +118,17 @@ const SCHEMA = [
           {
             key: 'check-interval', label: '检测间隔 (分钟)', type: 'number',
             min: 1,
-            hint: 'Cron 表达式优先，建议 720–1440',
+            hint: 'Cron 表达式优先；建议 720–1440，过短易触发运营商阻断',
             placeholder: '720',
           },
           {
             key: 'cron-expression', label: 'Cron 表达式', type: 'text',
-            hint: '定时检测任务，留空则使用 check-interval 间隔',
+            hint: '定时检测任务，留空则使用 check-interval；推荐 "0 4,16 * * *"',
             placeholder: '0 4,16 * * *',
           },
         ],
       },
       {
-        // print-progress / progress-mode 独立分组
         title: '输出显示',
         fields: [
           { key: 'print-progress', label: '终端显示进度', type: 'toggle' },
@@ -167,8 +166,8 @@ const SCHEMA = [
           {
             key: 'success-rate', label: '成功率阈值 (%)', type: 'number',
             min: 0, max: 100,
-            hint: '节点成功率低于此值时在日志中显示订阅 URL',
-            placeholder: '40',
+            hint: '订阅有效/失效的分界线，低于此值归入失效列表',
+            placeholder: '0',
           },
         ],
       },
@@ -177,31 +176,31 @@ const SCHEMA = [
         fields: [
           {
             key: 'speed-test-url', label: '测速地址', type: 'text',
-            hint: 'random = 随机测速地址，留空则关闭测速',
+            hint: 'random = 随机测速地址，留空则关闭测速；建议使用自建地址',
             placeholder: 'random',
           },
           {
             key: 'min-speed', label: '最低速度 (KB/s)', type: 'number',
             min: 0,
-            hint: '低于此值的节点将被丢弃，0 = 不过滤',
-            placeholder: '500',
+            hint: '低于此值的节点将被丢弃，0 = 不过滤；建议 128–500，过高对节点压力大',
+            placeholder: '128',
           },
           {
             key: 'download-timeout', label: '下载超时 (s)', type: 'number',
-            min: 1,
-            hint: '测速单节点超时，建议 10 秒',
+            min: 0,
+            hint: '测速单节点超时，建议 10s；不设置会阻塞测速队列',
             placeholder: '10',
           },
           {
             key: 'download-mb', label: '单节点上限 (MB)', type: 'number',
             min: 0,
-            hint: '每节点最大下载量，0 = 不限，建议设置避免测速过度消耗流量',
+            hint: '每节点最大下载量，0 = 不限；建议 20 MB 防止测速过度消耗流量',
             placeholder: '20',
           },
           {
             key: 'total-speed-limit', label: '总带宽限制 (MB/s)', type: 'number',
             min: 0,
-            hint: '全局测速带宽上限，0 = 不限',
+            hint: '全局测速带宽上限，0 = 不限；高并发时建议设置避免拉满出口',
             placeholder: '0',
           },
         ],
@@ -292,19 +291,9 @@ const SCHEMA = [
       {
         title: 'GitHub Gist', conditional: 'gist',
         fields: [
-          {
-            key: 'github-gist-id', label: 'Gist ID', type: 'text',
-            placeholder: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4',
-          },
-          {
-            key: 'github-token', label: 'GitHub Token', type: 'password',
-            placeholder: 'ghp_xxxxxxxxxxxxxxxxxxxx',
-          },
-          {
-            key: 'github-api-mirror', label: 'API 镜像', type: 'text',
-            hint: '可选，留空使用 api.github.com',
-            placeholder: 'https://ghproxy.com/',
-          },
+          { key: 'github-gist-id', label: 'Gist ID', type: 'text', placeholder: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4' },
+          { key: 'github-token', label: 'GitHub Token', type: 'password', placeholder: 'ghp_xxxxxxxxxxxxxxxxxxxx' },
+          { key: 'github-api-mirror', label: 'API 镜像', type: 'text', hint: '可选，留空使用 api.github.com', placeholder: 'https://ghproxy.com/' },
         ],
       },
       {
@@ -340,7 +329,7 @@ const SCHEMA = [
             hint: '监听端口，用于直接返回节点信息，方便订阅转换',
             placeholder: ':8199',
           },
-          { key: 'enable-web-ui', label: '是否启用Web控制面板，访问地址：http://127.0.0.1:8199/admin', type: 'toggle' },
+          { key: 'enable-web-ui', label: '启用 Web 控制面板', hint: '访问地址：http://127.0.0.1:8199/admin', type: 'toggle' },
           {
             key: 'api-key', label: 'API 密钥', type: 'password',
             hint: '留空则启动时自动生成',
@@ -348,7 +337,7 @@ const SCHEMA = [
           },
           {
             key: 'share-password', label: '分享密码', type: 'password',
-            hint: '用于订阅分享接口，访问 http://127.0.0.1:8199/sub 验证后查看分享的订阅文件列表',
+            hint: '用于订阅分享接口，访问 /sub/{password}/all.yaml',
             placeholder: '••••••••',
           },
         ],
@@ -396,7 +385,7 @@ const SCHEMA = [
           },
           {
             key: 'github-proxy', label: 'GitHub 代理', type: 'text',
-            hint: '加速 GitHub Release 下载',
+            hint: '加速 GitHub Release 下载；国内环境强烈建议配置',
             placeholder: 'https://ghfast.top/',
             links: [
               { label: '自建 CF 代理', href: 'https://github.com/sinspired/CF-Proxy', icon: 'github' },
@@ -411,7 +400,7 @@ const SCHEMA = [
       {
         title: '自动更新',
         fields: [
-          { key: 'update', label: '自动更新', hint: '关闭时仅提醒新版本', type: 'toggle' },
+          { key: 'update', label: '自动更新', hint: '关闭时仅提醒新版本，建议保持开启', type: 'toggle' },
           { key: 'update-on-startup', label: '启动时检查更新', type: 'toggle' },
           { key: 'prerelease', label: '使用预发布版本', hint: '包含 beta / rc 版本', type: 'toggle' },
           {
@@ -446,6 +435,68 @@ const SCHEMA = [
 ];
 
 /* ════════════════════════════════════════════════════════════
+   字段校验规则
+   (value: number|string, cfg: object) => {level:'warn'|'info'|'ok', msg:string} | null
+════════════════════════════════════════════════════════════ */
+const FIELD_VALIDATORS = {
+  'alive-concurrent': (v) => {
+    const n = Number(v);
+    if (n > 500) return { level: 'warn', msg: `并发 ${n} 过高，超出多数路由器芯片处理能力，建议设为 100–300` };
+    if (n > 300) return { level: 'info', msg: `并发 ${n} 偏高，请确认机器性能足够` };
+    if (n === 0) return { level: 'ok', msg: '自动模式：程序将根据 concurrent 基准自动计算' };
+    return null;
+  },
+  'speed-concurrent': (v) => {
+    const n = Number(v);
+    if (n > 32) return { level: 'warn', msg: `并发 ${n} 较高，测速会占用大量带宽，建议配合 total-speed-limit` };
+    if (n === 0) return { level: 'ok', msg: '自动模式' };
+    return null;
+  },
+  'timeout': (v) => {
+    const n = Number(v);
+    if (n < 1000) return { level: 'warn', msg: `超时 ${n}ms 过短，可能大量误杀稍高延迟的正常节点` };
+    if (n > 30000) return { level: 'info', msg: `超时 ${n}ms 较长，单次检测耗时会明显增加` };
+    return null;
+  },
+  'check-interval': (v) => {
+    const n = Number(v);
+    if (n <= 0) return null;
+    if (n < 120) return { level: 'warn', msg: `间隔 ${n} 分钟过于频繁，高频检测消耗流量且易触发运营商阻断，建议 ≥ 720` };
+    if (n < 360) return { level: 'info', msg: `间隔 ${n} 分钟偏短，高峰期检测稳定性不佳，建议 720+ 分钟` };
+    if (n >= 720) return { level: 'ok', msg: `间隔 ${n} 分钟（约 ${Math.round(n / 60)} 小时），频率合理` };
+    return null;
+  },
+  'min-speed': (v) => {
+    const n = Number(v);
+    if (n === 0) return { level: 'info', msg: '未设置最低速度，所有节点均会保留（含极慢节点）' };
+    if (n > 2000) return { level: 'warn', msg: `${n} KB/s 偏高，会对节点造成较大压力，建议 ≤ 500 KB/s` };
+    if (n > 1000) return { level: 'info', msg: `${n} KB/s 较高，高要求场景适用，节点数量会明显减少` };
+    return null;
+  },
+  'download-timeout': (v) => {
+    const n = Number(v);
+    if (n === 0) return { level: 'warn', msg: '未设置，测速无时间上限，极慢节点会阻塞测速队列，建议设为 10s' };
+    return null;
+  },
+  'download-mb': (v) => {
+    const n = Number(v);
+    if (n === 0) return { level: 'info', msg: '未限制单节点下载量，高并发时可能消耗大量流量，建议设为 20 MB' };
+    return null;
+  },
+  'threshold': (v) => {
+    const n = Number(v);
+    if (n < 0.25) return { level: 'warn', msg: `阈值 ${n} 过严（< /8 网段），可能大量误删相似来源的正常节点` };
+    if (n > 0.95) return { level: 'info', msg: `阈值 ${n} 接近 1.0，几乎不去重，CF 反代机房可能保留大量重复节点` };
+    return null;
+  },
+  'success-limit': (v) => {
+    const n = Number(v);
+    if (n > 0 && n < 30) return { level: 'info', msg: `保存上限 ${n} 较少，可能影响日常使用，建议 ≥ 100` };
+    return null;
+  },
+};
+
+/* ════════════════════════════════════════════════════════════
    内部状态
 ════════════════════════════════════════════════════════════ */
 let _cfg = {};
@@ -464,6 +515,60 @@ function el(tag, attrs = {}) {
     else e.setAttribute(k, v);
   }
   return e;
+}
+
+/* ════════════════════════════════════════════════════════════
+   内联校验提示 — 与 analysis.html suggest-item 体系完全对齐
+════════════════════════════════════════════════════════════ */
+
+// SVG 图标（与 analysis.html 一致）
+const _ICON = {
+  warn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  ok:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+};
+
+/**
+ * 在 fieldRow 下方渲染/更新内联提示
+ * @param {HTMLElement} fieldRow  — .cfg-field 根元素
+ * @param {{level,msg}|null} result — 校验结果；null = 移除提示
+ */
+function _updateInlineHint(fieldRow, result) {
+  let hint = fieldRow.querySelector('.cfg-inline-hint');
+  if (!result) {
+    hint?.remove();
+    return;
+  }
+  if (!hint) {
+    hint = el('div', { class: 'cfg-inline-hint' });
+    // 插入到字段行末尾（label 和 control 之后）
+    fieldRow.appendChild(hint);
+  }
+  hint.className = `cfg-inline-hint lvl-${result.level}`;
+  hint.innerHTML = `${_ICON[result.level] || _ICON.info}<span>${result.msg}</span>`;
+}
+
+/**
+ * 为 number 字段附加实时校验监听器
+ * @param {HTMLElement} fieldRow
+ * @param {Object} fieldDef
+ */
+function _attachValidator(fieldRow, fieldDef) {
+  const validator = FIELD_VALIDATORS[fieldDef.key];
+  if (!validator || fieldDef.type !== 'number') return;
+
+  const inp = fieldRow.querySelector('input[type="number"]');
+  if (!inp) return;
+
+  const run = () => {
+    const result = validator(inp.value);
+    _updateInlineHint(fieldRow, result);
+  };
+
+  inp.addEventListener('input', run);
+  inp.addEventListener('change', run);
+  // 初始校验（延迟执行，等 DOM 稳定）
+  requestAnimationFrame(run);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -491,7 +596,6 @@ function mkNumber(field, value) {
     step: String(field.step ?? 1),
     placeholder: field.placeholder ?? '',
   });
-  // inp.value = value ?? 0;
   inp.value = (value !== undefined && value !== null && value !== '') ? value : 0;
 
   const makeBtn = (sym, dir) => {
@@ -523,15 +627,10 @@ function mkToggle(key, value) {
   return wrap;
 }
 
-/**
- * 自定义下拉选择器（完全替代原生 <select>）
- * 渲染为 div 容器，通过隐藏 <select> 同步值供 collectPanel 收集
- */
 function mkSelect(field, value) {
   const currentVal = value ?? field.options[0]?.value ?? '';
   const currentLabel = field.options.find(o => o.value === currentVal)?.label ?? currentVal;
 
-  // 隐藏的原生 select，供 collectPanel 读取值
   const native = el('select', {
     class: 'cfg-select-native',
     'data-key': field.key,
@@ -544,7 +643,6 @@ function mkSelect(field, value) {
     native.appendChild(o);
   }
 
-  // 触发按钮
   const trigger = el('button', {
     type: 'button',
     class: 'cfg-sel-trigger',
@@ -559,7 +657,6 @@ function mkSelect(field, value) {
       <polyline points="6 9 12 15 18 9"/>
     </svg>`;
 
-  // 下拉列表
   const dropdown = el('div', { class: 'cfg-sel-dropdown', role: 'listbox' });
   dropdown.style.display = 'none';
 
@@ -571,17 +668,11 @@ function mkSelect(field, value) {
       'data-value': opt.value,
       textContent: opt.label,
     });
-    item.addEventListener('mousedown', (e) => {
-      // mousedown 先于 blur，阻止 trigger 失焦关闭
-      e.preventDefault();
-    });
+    item.addEventListener('mousedown', (e) => e.preventDefault());
     item.addEventListener('click', () => {
-      // 更新显示值
       trigger.querySelector('.cfg-sel-value').textContent = opt.label;
-      // 同步原生 select
       native.value = opt.value;
       native.dispatchEvent(new Event('change', { bubbles: true }));
-      // 更新选中态
       dropdown.querySelectorAll('.cfg-sel-option').forEach(el => {
         el.classList.toggle('selected', el.dataset.value === opt.value);
         el.setAttribute('aria-selected', String(el.dataset.value === opt.value));
@@ -591,18 +682,14 @@ function mkSelect(field, value) {
     dropdown.appendChild(item);
   }
 
-  // 包装容器
   const wrap = el('div', { class: 'cfg-sel-wrap' });
   wrap.append(native, trigger, dropdown);
 
-  // 打开 / 关闭
   function openDropdown() {
     dropdown.style.display = '';
     trigger.setAttribute('aria-expanded', 'true');
     trigger.classList.add('open');
-    // 滚动到选中项
-    const sel = dropdown.querySelector('.cfg-sel-option.selected');
-    sel?.scrollIntoView({ block: 'nearest' });
+    dropdown.querySelector('.cfg-sel-option.selected')?.scrollIntoView({ block: 'nearest' });
   }
   function closeDropdown() {
     dropdown.style.display = 'none';
@@ -610,33 +697,17 @@ function mkSelect(field, value) {
     trigger.classList.remove('open');
   }
 
-  trigger.addEventListener('click', () => {
-    dropdown.style.display === 'none' ? openDropdown() : closeDropdown();
-  });
-
-  // 点击外部关闭
-  trigger.addEventListener('blur', () => {
-    // 延迟，让 option 的 click 先触发
-    setTimeout(closeDropdown, 120);
-  });
-
-  // 键盘导航
+  trigger.addEventListener('click', () =>
+    dropdown.style.display === 'none' ? openDropdown() : closeDropdown()
+  );
+  trigger.addEventListener('blur', () => setTimeout(closeDropdown, 120));
   trigger.addEventListener('keydown', (e) => {
     const items = [...dropdown.querySelectorAll('.cfg-sel-option')];
     const cur = items.findIndex(i => i.classList.contains('selected'));
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      dropdown.style.display === 'none' ? openDropdown() : closeDropdown();
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (dropdown.style.display === 'none') openDropdown();
-      items[Math.min(cur + 1, items.length - 1)]?.click();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      items[Math.max(cur - 1, 0)]?.click();
-    } else if (e.key === 'Escape') {
-      closeDropdown();
-    }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dropdown.style.display === 'none' ? openDropdown() : closeDropdown(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (dropdown.style.display === 'none') openDropdown(); items[Math.min(cur + 1, items.length - 1)]?.click(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[Math.max(cur - 1, 0)]?.click(); }
+    else if (e.key === 'Escape') { closeDropdown(); }
   });
 
   return wrap;
@@ -679,17 +750,12 @@ function mkUrlList(field, values) {
   return wrap;
 }
 
-// SVG 图标映射
 const LINK_ICONS = {
   github: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>`,
   docs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
   link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
 };
 
-/**
- * 渲染帮助链接徽章组
- * @param {Array<{label:string, href:string, icon?:string}>} links
- */
 function mkLinks(links) {
   const wrap = el('div', { class: 'cfg-links' });
   for (const lk of links) {
@@ -715,23 +781,25 @@ function mkField(fieldDef, value) {
   if (fieldDef.hint) {
     lbl.appendChild(el('span', { class: 'cfg-label-hint', textContent: fieldDef.hint }));
   }
-
-  // 渲染帮助链接
   if (fieldDef.links?.length) {
     lbl.appendChild(mkLinks(fieldDef.links));
   }
 
   let ctrl;
   switch (fieldDef.type) {
-    case 'number': ctrl = mkNumber(fieldDef, value); break;
-    case 'toggle': ctrl = mkToggle(fieldDef.key, value); break;
-    case 'select': ctrl = mkSelect(fieldDef, value); break;
-    case 'chips': ctrl = mkChips(fieldDef, value); break;
+    case 'number':   ctrl = mkNumber(fieldDef, value); break;
+    case 'toggle':   ctrl = mkToggle(fieldDef.key, value); break;
+    case 'select':   ctrl = mkSelect(fieldDef, value); break;
+    case 'chips':    ctrl = mkChips(fieldDef, value); break;
     case 'url-list': ctrl = mkUrlList(fieldDef, value); break;
-    default: ctrl = mkInput(fieldDef, value); break;
+    default:         ctrl = mkInput(fieldDef, value); break;
   }
 
   row.append(lbl, ctrl);
+
+  // 附加内联校验（渲染完成后）
+  _attachValidator(row, fieldDef);
+
   return row;
 }
 
@@ -749,7 +817,6 @@ function buildPanel(tabId) {
 
   for (const sec of schema.sections) {
     if (sec.conditional) {
-      // 条件分组：整体包裹，由存储方式联动控制显隐
       const group = el('div', { class: 'cfg-cond-group', 'data-cond': sec.conditional });
       group.appendChild(el('div', { class: 'cfg-section', textContent: sec.title }));
       sec.fields.forEach(f => group.appendChild(mkField(f, _cfg[f.key])));
@@ -763,7 +830,6 @@ function buildPanel(tabId) {
 
   // 存储方式联动
   if (tabId === 'storage') {
-    // 监听隐藏的原生 select 的 change 事件
     const sel = panel.querySelector('select.cfg-select-native[data-key="save-method"]');
     if (sel) {
       const syncGroups = (method) => {
@@ -808,7 +874,6 @@ function collectPanel(tabId) {
           break;
         }
         case 'select': {
-          // 读取隐藏的原生 select（data-key 在 native 上）
           const sel = panel.querySelector(`select.cfg-select-native[data-key="${key}"]`);
           if (sel) out[key] = sel.value;
           break;
@@ -842,9 +907,7 @@ function collectPanel(tabId) {
    公开 API
 ════════════════════════════════════════════════════════════ */
 
-/**
- * 初始化 Tab 切换，页面加载后调用一次
- */
+/** 初始化 Tab 切换，页面加载后调用一次 */
 export function initConfigForm() {
   const tabBar = document.getElementById('cfgTabBar');
   if (!tabBar) return;
@@ -864,20 +927,18 @@ export function initConfigForm() {
       p.classList.toggle('active', p.id === `panel-${id}`);
     });
 
-    // 懒渲染：首次切换到该 Tab 才构建面板
     if (!_built.has(id)) buildPanel(id);
   });
 }
 
 /**
- * 根据配置对象渲染表单，登录成功并获取配置后调用
+ * 根据配置对象渲染表单
  * @param {Object} configObj — YAML 解析后的配置对象
  */
 export function renderConfigForm(configObj) {
   _cfg = configObj ?? {};
   _built.clear();
 
-  // 立即渲染当前激活的 Tab
   const activeBtn = document.querySelector('#cfgTabBar .cfg-tab.active');
   buildPanel(activeBtn?.dataset.tab ?? SCHEMA[0].tab);
 }
@@ -894,3 +955,8 @@ export function collectConfigForm() {
   }
   return result;
 }
+
+/* ════════════════════════════════════════════════════════════
+   导出校验工具（供快速预览面板调用）
+════════════════════════════════════════════════════════════ */
+export { FIELD_VALIDATORS };

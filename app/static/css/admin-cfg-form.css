@@ -657,3 +657,249 @@
   border-color: var(--fg);
   background: color-mix(in srgb, var(--fg) 8%, transparent);
 }
+
+/* ════════════════════════════════════════════════════════════
+   内联字段校验提示
+   与 analysis.html 的 .suggest-item 体系完全对齐
+════════════════════════════════════════════════════════════ */
+
+.cfg-inline-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  margin-top: 5px;
+  grid-column: 1 / -1;   /* 横跨整个字段行（适配 cfg-field 网格布局）*/
+  animation: hintFadeIn .18s ease-out;
+}
+
+@keyframes hintFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cfg-inline-hint svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cfg-inline-hint.lvl-warn {
+  background: color-mix(in srgb, var(--warning, #f59e0b) 9%, transparent);
+  border-color: color-mix(in srgb, var(--warning, #f59e0b) 25%, transparent);
+  color: var(--warning, #f59e0b);
+}
+.cfg-inline-hint.lvl-info {
+  background: color-mix(in srgb, var(--accent, #3b82f6) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #3b82f6) 20%, transparent);
+  color: var(--fg, inherit);
+}
+.cfg-inline-hint.lvl-info svg { color: var(--accent, #3b82f6); }
+.cfg-inline-hint.lvl-ok {
+  background: color-mix(in srgb, var(--success, #22c55e) 8%, transparent);
+  border-color: color-mix(in srgb, var(--success, #22c55e) 20%, transparent);
+  color: var(--success, #22c55e);
+}
+
+/* ════════════════════════════════════════════════════════════
+   快速配置预览浮动面板
+   风格与 analysis.html cfg-card / cfg-kv 体系完全对齐
+════════════════════════════════════════════════════════════ */
+
+.cfg-preview-panel {
+  z-index: 9999;
+  width: min(560px, calc(100vw - 24px));
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(0,0,0,.12));
+  background: var(--glass-bg, #fff);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,.08),
+    0 12px 30px -4px rgba(0,0,0,.14),
+    0 0 0 1px rgba(255,255,255,.05);
+  overflow: hidden;
+  animation: pvSlideIn .18s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+@keyframes pvSlideIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* 面板头部 */
+.pv-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, rgba(0,0,0,.08));
+  background: color-mix(in srgb, var(--glass-bg, #fff) 60%, transparent);
+}
+
+.pv-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  flex: 1;
+}
+.pv-title svg { width: 13px; height: 13px; flex-shrink: 0; color: var(--muted); }
+
+/* 健康状态徽章 */
+.pv-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.pv-health.ok   { background: color-mix(in srgb, var(--success,#22c55e) 12%, transparent); border-color: color-mix(in srgb, var(--success,#22c55e) 25%, transparent); color: var(--success,#22c55e); }
+.pv-health.warn { background: color-mix(in srgb, var(--warning,#f59e0b) 12%, transparent); border-color: color-mix(in srgb, var(--warning,#f59e0b) 25%, transparent); color: var(--warning,#f59e0b); }
+.pv-health svg  { width: 11px; height: 11px; flex-shrink: 0; }
+
+.pv-close {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+.pv-close svg { width: 13px; height: 13px; }
+.pv-close:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
+
+/* 面板主体 */
+.pv-body { padding: 14px 16px 12px; overflow-y: auto; max-height: calc(100vh - 120px); }
+
+/* 卡片网格 — 1列（紧凑）或 2列（宽屏） */
+.pv-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 480px) {
+  .pv-grid { grid-template-columns: 1fr 1fr; }
+  /* 第三张卡（存储&安全）独占一列补满 */
+  .pv-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+/* 单张卡 — 完全复用 analysis.html .cfg-card 语义 */
+.pv-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(0,0,0,.1));
+  background: var(--glass-bg, #fff);
+}
+
+.pv-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pv-card-title svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+/* KV 行 — 与 analysis.html .cfg-kv 对齐 */
+.pv-kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.08)) 55%, transparent);
+  gap: 8px;
+  cursor: default;
+}
+.pv-kv:last-child { border-bottom: none; }
+
+.pv-k {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.pv-status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.pv-v {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.pv-v.ok     { color: var(--success, #22c55e); }
+.pv-v.warn   { color: var(--warning, #f59e0b); }
+.pv-v.info   { color: var(--accent,  #3b82f6); }
+.pv-v.muted  { color: var(--muted); opacity: .6; }
+
+/* 状态图标 */
+.pv-status-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  stroke-width: 2.5;
+}
+.pv-status-icon.ok   { color: var(--success, #22c55e); }
+.pv-status-icon.warn { color: var(--warning, #f59e0b); }
+.pv-status-icon.info { color: var(--accent,  #3b82f6); }
+.pv-status-icon.muted{ color: var(--muted); opacity: .5; }
+
+/* 面板底部链接 */
+.pv-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border, rgba(0,0,0,.06));
+}
+.pv-footer-hint {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: .7;
+}
+.pv-footer-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.pv-footer-link:hover { text-decoration: underline; }
+
+/* 快速预览按钮图标（插入 admin.html card-action 区域）*/
+/* 样式与 .btn-round 完全一致，无额外新增 */

@@ -1,4 +1,6 @@
+// admin.js
 import { initConfigForm, renderConfigForm, collectConfigForm } from './config-form.js';
+import { initQuickPreview } from './cfg-quickpreview.js';
 
 ; (function () {
   'use strict'
@@ -1871,6 +1873,10 @@ import { initConfigForm, renderConfigForm, collectConfigForm } from './config-fo
       await loadAll()
       startPollers()
       showToast('验证成功，已登录', 'success')
+
+      // 初始化配置快速预览
+      const qp = initQuickPreview(() => sessionKey);
+      qp?.enable();
     } catch (e) {
       showToast('网络错误或服务器未响应', 'error')
     } finally {
@@ -2827,6 +2833,9 @@ import { initConfigForm, renderConfigForm, collectConfigForm } from './config-fo
           await loadAll()
           startPollers()
           showToast('自动登录成功', 'success')
+          // 初始化配置快速预览
+          const qp = initQuickPreview(() => sessionKey);
+          qp?.enable();
         } else {
           throw new Error('auth failed')
         }

@@ -303,7 +303,7 @@ const SCHEMA = [
           { key: 'mihomo-overwrite-url', label: 'Mihomo 覆写 URL', type: 'text', fullWidth: true, placeholder: 'http://127.0.0.1:8199/Sinspired_Rules_CDN.yaml', hint: '用于生成带指定规则的mihomo/clash.meta订阅链接', },
           { key: 'sub-store-sync-cron', label: '同步 Gist Cron', type: 'cron', fullWidth: true, placeholder: '55 5-23/2 * * *', hint: '定时将订阅/文件上传到私有 Gist. 在前端, 叫做 同步 或 同步配置.', },
           { key: 'sub-store-produce-cron', label: '更新订阅 Cron', type: 'text', fullWidth: true, placeholder: '0 */2 * * *,sub,sub', hint: ' 0 */2 * * *,sub,sub_A;0 */3 * * *,col,col_B = 每 2 小时处理一次单条订阅 sub_A，每 3 小时处理一次组合订阅 col_B。', },
-          { key: 'sub-store-push-service', label: 'Push 推送服务', type: 'text', placeholder: 'https://push.example.com', hint: '例如：Bark: https://api.day.app/XXXXXXXXXXXX/[推送标题]/[推送内容]', },
+          { key: 'sub-store-push-service', label: 'Push 推送服务', type: 'text', fullWidth: true, placeholder: 'https://push.example.com', hint: '例如：Bark: https://api.day.app/XXXXXXXXXXXX/[推送标题]/[推送内容]', },
         ],
       },
       {

@@ -363,6 +363,19 @@
   margin: 0 -2px;
 }
 
+.cfg-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.cfg-label-row .cfg-label-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .cfg-label-col {
   grid-column: 1;
   grid-row: 1;

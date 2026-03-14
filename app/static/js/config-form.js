@@ -672,23 +672,21 @@ function mkUrlList(field, values) {
   const list = Array.isArray(values) ? values : (values ? [values] : []);
   const wrap = el('div', { class: 'cfg-url-list', 'data-key': field.key });
 
-  /* ── 标签行：label + 折行切换按钮 ── */
-  // 注意：label 由外层 mkField 渲染，这里只在列表内部顶部插入按钮
-  const toolbar = el('div', { class: 'cfg-url-toolbar' });
+  // 折行按钮挂到 wrap 上，由 mkField 负责放置到 label 行
   const wrapToggle = el('button', {
     type: 'button',
     class: 'cfg-url-wrap-toggle',
     title: '切换折行',
     textContent: '↵ 折行',
   });
-  let wrapOn = false;
+  wrap._wrapToggle = wrapToggle;  // ← 暴露给 mkField
 
+  let wrapOn = false;
   wrapToggle.addEventListener('click', () => {
     wrapOn = !wrapOn;
     wrap.classList.toggle('wrap-mode', wrapOn);
     wrapToggle.classList.toggle('active', wrapOn);
     wrapToggle.textContent = wrapOn ? '→ 单行' : '↵ 折行';
-    /* 切换后重算所有行高 */
     wrap.querySelectorAll('.cfg-url-input').forEach(t => {
       if (wrapOn) {
         t.style.height = 'auto';
@@ -698,9 +696,6 @@ function mkUrlList(field, values) {
       }
     });
   });
-
-  toolbar.appendChild(wrapToggle);
-  wrap.appendChild(toolbar);
 
   const addBtn = el('button', { class: 'cfg-url-add', type: 'button', textContent: '+ 添加' });
   wrap.appendChild(addBtn);
@@ -895,7 +890,10 @@ function mkField(fieldDef, value) {
     if (fieldDef.links?.length) labelCol.appendChild(mkLinks(fieldDef.links));
     row.appendChild(labelCol);
   } else {
-    row.appendChild(el('span', { class: 'cfg-label-text', textContent: fieldDef.label }));
+    // url-list 需要在 label 右侧放折行按钮，先占位，ctrl 构建后再填入
+    const labelRow = el('div', { class: 'cfg-label-row' });
+    labelRow.appendChild(el('span', { class: 'cfg-label-text', textContent: fieldDef.label }));
+    row.appendChild(labelRow);
   }
 
   const ctrlWrap = el('div', { class: 'cfg-ctrl' });
@@ -912,6 +910,11 @@ function mkField(fieldDef, value) {
   }
   ctrlWrap.appendChild(ctrl);
   row.appendChild(ctrlWrap);
+
+  // url-list：将折行按钮插入 label 行右侧
+  if (fieldDef.type === 'url-list' && ctrl._wrapToggle) {
+    row.querySelector('.cfg-label-row')?.appendChild(ctrl._wrapToggle);
+  }
 
   // full-width 字段的 hint 仍挂在 row 上（跨全列）
   // 非 full-width 的 hint 已在上方 labelCol 内添加，此处跳过

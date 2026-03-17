@@ -341,6 +341,7 @@ func (app *App) getStatus(c *gin.Context) {
 		"processResults":    check.ProcessResults.Load(),
 		"lastCheck":         lastCheck,
 		"isSubStoreRunning": assets.IsSubStoreRunning.Load(),
+		"eta":               check.ETASeconds.Load(), // -1=计算中, 0=完成, >0=剩余秒
 	})
 }
 
@@ -450,4 +451,47 @@ func ReadLastNLines(filePath string, n int) ([]string, error) {
 	copy(result, ring[start:])
 	copy(result[n-start:], ring[:start])
 	return result, nil
+}
+
+func loadHistoricalCheckRate() {
+	reportPath, err := AnalysisReportPath()
+	if err != nil {
+		return
+	}
+	data, err := os.ReadFile(reportPath)
+	if err != nil {
+		return
+	}
+
+	var report struct {
+		CheckInfo struct {
+			CheckCountRaw    string `yaml:"check_count_raw"`
+			CheckDurationRaw int64  `yaml:"check_duration_raw"` // 已统一为秒
+		} `yaml:"check_info"`
+	}
+	if err := yaml.Unmarshal(data, &report); err != nil {
+		return
+	}
+
+	count := parseHistNodeCount(report.CheckInfo.CheckCountRaw)
+	durSec := float64(report.CheckInfo.CheckDurationRaw)
+	if count > 0 && durSec > 0 {
+		rate := count / durSec
+		check.SetHistoricalRate(rate)
+		slog.Debug("历史检测速率加载", "rate", fmt.Sprintf("%.1f 节点/秒", rate))
+	}
+}
+
+func parseHistNodeCount(s string) float64 {
+	s = strings.NewReplacer(",", "", "，", "").Replace(strings.TrimSpace(s))
+	if strings.Contains(s, "万") {
+		if n, err := strconv.ParseFloat(strings.ReplaceAll(s, "万", ""), 64); err == nil {
+			return n * 10000
+		}
+	}
+	n, err := strconv.ParseFloat(s, 64)
+	if err == nil {
+		return n
+	}
+	return 0
 }

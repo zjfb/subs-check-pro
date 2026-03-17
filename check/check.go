@@ -223,6 +223,9 @@ func Check() ([]Result, error) {
 
 	TotalBytes.Store(0)
 
+	// 重置预计剩余时间计算
+	ResetETA()
+
 	// 初始化测速和流媒体检测开关
 	speedON = config.GlobalConfig.SpeedTestURL != ""
 	mediaON = config.GlobalConfig.MediaCheck
@@ -403,6 +406,22 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 		}()
 	}
 
+	// 计算预计剩余时间
+	go func() {
+		ticker := time.NewTicker(500 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				UpdateETA()
+				return
+			case <-ticker.C:
+				SnapshotRate()
+				UpdateETA()
+			}
+		}
+	}()
+
 	// 启动流水线阶段
 	go pc.distributeJobs(proxies, ctx)
 	go pc.runAliveStage(ctx)
@@ -425,6 +444,9 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 
 	// 标记检测完成，开始处理结果，保存，上传等
 	ProcessResults.Store(true)
+
+	// 重置预计剩余时间计算
+	ETASeconds.Store(0)
 
 	slog.Info(fmt.Sprintf("可用节点数量: %d", len(pc.results)))
 	CheckTraffic = utils.FormatTraffic(uint64(TotalBytes.Load()))

@@ -731,7 +731,8 @@ import { initQuickPreview } from './cfg-quickpreview.js';
             realStartTime,
             forceClose,
             successlimited,
-            processResults
+            processResults,
+            d.eta ?? 0        // ← 新增，来自后端 ETASeconds
           )
 
           hideLastCheckResult() // 确保 History 隐藏
@@ -771,7 +772,8 @@ import { initQuickPreview } from './cfg-quickpreview.js';
           null,
           false,
           false,
-          false
+          false,
+          0
         )
 
         // 如果是刚启动尚未有数据，清空进度条
@@ -871,18 +873,6 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     }
   }
 
-  /**
-   *更新进度条
-   *
-   * @param {*} total
-   * @param {*} processed
-   * @param {*} available
-   * @param {*} checking
-   * @param {*} lastChecked
-   * @param {*} lastCheckData
-   * @param {*} [serverStartTime=null]
-   * @param {boolean} [forceClose=false]
-   */
   function updateProgress(
     total,
     processed,
@@ -893,83 +883,39 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     serverStartTime = null,
     forceClose = false,
     successlimited = false,
-    processResults = false
+    processResults = false,
+    eta = 0   // 后端提供：-1=计算中, 0=完成/空闲, >0=剩余秒数
   ) {
-    // 初始化状态对象
+    // 初始化状态对象（保留，供运行时长 title 使用）
     if (!updateProgress.etaState) {
       updateProgress.etaState = {
         startTime: 0,
-        lastUpdateUI: 0,
-        lastRecordHistory: 0,
-        history: [],
-        cachedEtaText: '',
         isRunning: false,
-        historicalRate: 0
       }
     }
-
     const state = updateProgress.etaState
     const now = Date.now()
 
     total = Number(total) || 0
     processed = Number(processed) || 0
 
-    // --- 1. 状态管理与重置 ---
+    // --- 1. 状态管理（保留 startTime 用于 title 显示） ---
     if (checking) {
-      // 如果还没标记运行，或者传入了明确的服务器开始时间且与当前记录不符（纠正时间）
-      if (
-        !state.isRunning ||
-        processed === 0 ||
-        (serverStartTime && Math.abs(state.startTime - serverStartTime) > 1000)
-      ) {
+      if (!state.isRunning || processed === 0 ||
+        (serverStartTime && Math.abs(state.startTime - serverStartTime) > 1000)) {
         state.isRunning = true
-
-        // 优先使用从日志解析出的真实开始时间，否则使用当前时间
         state.startTime = serverStartTime || now
-
-        // 重置 UI 更新计时器，确保刷新后立即计算一次，不要等 2秒
-        state.lastUpdateUI = 0
-
-        state.history = []
-        state.cachedEtaText = '计算中...'
-
-        // 记录初始点: 如果是从中途恢复的，起始点就是 {t: start, c: 0}
-        state.history.push({ t: state.startTime, c: 0 })
-
-        state.historicalRate = 0
-        if (
-          lastCheckData &&
-          lastCheckData.total > 0 &&
-          lastCheckData.duration > 0
-        ) {
-          state.historicalRate = lastCheckData.total / lastCheckData.duration
-        }
       }
-    } else if (!checking) {
+    } else {
       state.isRunning = false
       state.startTime = 0
-      state.history = []
     }
 
-    // --- 2. 记录历史数据 ---
-    if (state.isRunning && checking) {
-      if (now - state.lastRecordHistory > 500) {
-        state.history.push({ t: now, c: processed })
-        state.lastRecordHistory = now
-        // 保留最近 30 秒
-        const threshold = now - 60000
-        while (state.history.length > 0 && state.history[0].t < threshold) {
-          state.history.shift()
-        }
-      }
-    }
-
-    // --- 3. 基础 UI 更新 ---
+    // --- 2. 基础 UI 更新（原样保留） ---
     const pct = total > 0 ? Math.min(100, (processed / total) * 100) : 0
     if (els.progressBar) els.progressBar.value = pct
     if (els.progressText) els.progressText.textContent = `${processed}/${total}`
-    if (els.progressPercent)
-      els.progressPercent.textContent = pct.toFixed(1) + '%'
+    if (els.progressPercent) els.progressPercent.textContent = pct.toFixed(1) + '%'
 
     if (els.successTitle) els.successTitle.textContent = '可用：'
     if (els.successText) {
@@ -977,145 +923,52 @@ import { initQuickPreview } from './cfg-quickpreview.js';
       els.successText.textContent = available
     }
 
-    // --- 4. 智能 ETA 算法 ---
-    let etaText = state.cachedEtaText
-
-    // 只要进入 processResults，无论是否有计算值，强制显示处理结果
+    // --- 3. ETA 文字（后端值，替换原计算段） ---
+    let etaText = ''
     if (processResults) {
       etaText = '正在保存检测结果...'
-      state.cachedEtaText = etaText
-      els.statusEl.className = 'muted status-label status-stopping'
+      if (els.statusEl) els.statusEl.className = 'muted status-label status-stopping'
     } else if (forceClose) {
       etaText = '等待检测完成...'
-      state.cachedEtaText = etaText
-      els.statusEl.className = 'muted status-label status-forcing'
+      if (els.statusEl) els.statusEl.className = 'muted status-label status-forcing'
     } else if (successlimited) {
       etaText = '数量达标，正在结束...'
-      state.cachedEtaText = etaText
-      els.statusEl.className = 'muted status-label status-stopping'
-    }
-    // 只有在非特殊状态下，才进行时间计算
-    else if (checking && total > 0 && processed < total) {
-      const totalTimeElapsed = now - state.startTime
-
-      // 如果是从日志恢复的时间，totalTimeElapsed 可能已经很大（例如 50000ms）。
-      // 此时如果不满 3000ms 的判断会自动跳过，直接进入下方的计算逻辑。
-      // 这是符合预期的：中途进来不需要预热。
-      // 前 3 秒强制预热，给用户一点反应时间，也避免除0
-      if (totalTimeElapsed < 3000) {
-        etaText = '计算中...'
-        state.cachedEtaText = etaText
-      }
-      // 计算期：每 1 秒刷新一次 UI
-      // 这里的 2000 是刷新间隔。由于上面重置了 lastUpdateUI = 0，刷新页面后第一次必定进入此分支
-      else if (now - state.lastUpdateUI > 1000) {
-        // --- A. 计算实时速率 (Real-time Rate) ---
-        let realTimeRate = 0
-
-        // 如果历史队列为空（比如刚刷新页面），或者进度很低
-        // 使用 "全局平均速率" = 当前已处理量 / 总耗时
-        // 这样即使刷新页面丢失了最近30秒的瞬时速度，也能立刻得到一个准确的平均速度
-        if (state.history.length <= 1 || pct < 15) {
-          realTimeRate = processed / (totalTimeElapsed / 1000)
-        } else {
-          // 阶段二：使用滑动窗口 (Last 30s)
-          const startPoint = state.history[0]
-          const winTime = (now - startPoint.t) / 1000
-          const winCount = processed - startPoint.c
-          if (winTime > 0) realTimeRate = winCount / winTime
-        }
-
-        // --- B. 融合历史数据 ---
-        let finalRate = realTimeRate
-
-        // 只有当存在有效的历史数据时，才启用高级算法
-        if (state.historicalRate > 0) {
-          // === 策略 1: 冷启动保守阶段 (< 15%) ===
-          if (pct < 15) {
-            // 如果实时速率 > 历史速率 (看起来比以前快)，我们认为是“假快”或预热假象。
-            // 此时强制使用较慢的历史速率，这样算出来的 ETA 会更长（更保守）。
-            if (realTimeRate > state.historicalRate) {
-              finalRate = state.historicalRate
-            }
-            // 如果实时速率 < 历史速率 (真的卡)，那就用实时的，如实反映慢速。
-            else {
-              finalRate = realTimeRate
-            }
-          }
-
-          // === 策略 2: 巡航加权阶段 (>= 15%) ===
-          else {
-            // 计算权重 w (代表实时速率的权重)
-            // 15% 时 w=0.3 (30%信实时, 70%信历史) -> 平滑过渡
-            // 100% 时 w=1.0 (100%信实时)
-            let w = 0.3 + ((pct - 15) / 85) * 0.7
-
-            // 限制范围
-            w = Math.min(1, Math.max(0, w))
-
-            finalRate = realTimeRate * w + state.historicalRate * (1 - w)
-          }
-        }
-
-        // --- C. 计算最终时间 ---
-        if (finalRate > 0) {
-          const remaining = total - processed
-          const etaSeconds = remaining / finalRate
-          etaText = formatDuration(etaSeconds)
-        }
-
-        state.cachedEtaText = etaText
-        state.lastUpdateUI = now
-      }
-    } else {
-      etaText = ''
+      if (els.statusEl) els.statusEl.className = 'muted status-label status-stopping'
+    } else if (checking && total > 0 && processed < total) {
+      if (eta === -1) etaText = '计算中...'
+      else if (eta > 0) etaText = formatDuration(eta)
+      // eta === 0 且仍在检测中：视为后端尚未推送，保持空
     }
 
-    // --- 5. 状态栏文字更新 ---
+    // --- 4. 状态栏文字（原样保留） ---
     if (els.statusEl) {
       if (checking) {
-        const runSec = Math.floor((now - state.startTime) / 1000)
-        els.statusEl.title = `已运行: ${runSec}s`
+        const runSec = state.startTime ? Math.floor((now - state.startTime) / 1000) : 0
+        els.statusEl.title = runSec > 0 ? `已运行: ${runSec}s` : ''
 
-        // 刚启动
-        if (
-          processed === 0 &&
-          !processResults &&
-          !forceClose &&
-          !successlimited
-        ) {
+        if (processed === 0 && !processResults && !forceClose && !successlimited) {
           els.statusEl.textContent = '正在获取订阅...'
           els.statusEl.className = 'muted status-label status-prepare'
-        }
-        // 如果处于特殊状态 (处理结果/中止/达标)，直接显示 etaText
-        else if (processResults) {
+        } else if (processResults) {
           els.statusEl.innerHTML = `${checking_SPINNER}<span>${etaText}</span>`
-          // 这里应用新定义的 class
           els.statusEl.className = 'muted status-label status-process'
-        }
-
-        // 正在中止或达标
-        else if (forceClose || successlimited) {
+        } else if (forceClose || successlimited) {
           els.statusEl.innerHTML = `${checking_SPINNER}<span>${etaText}</span>`
         } else if (etaText === '计算中...') {
-          // 已开始处理，但 ETA 未算出
           els.statusEl.innerHTML = `${checking_SPINNER}<span>已启动, 计算剩余时间...</span>`
           els.statusEl.className = 'muted status-label status-calculating'
         } else if (!etaText) {
           els.statusEl.innerHTML = `<span>正在保存检测结果...</span>`
           els.statusEl.className = 'muted status-label status-process'
         } else {
-          // 正常显示倒计时
           els.statusEl.innerHTML = `${checking_SPINNER}<span>运行中, 预计剩余: ${etaText}</span>`
           els.statusEl.className = 'muted status-label status-checking'
         }
       } else if (lastChecked || (processed >= total && total > 0)) {
-        // 检测完成
         els.statusEl.textContent = '检测完成'
         els.statusEl.title = ''
         els.statusEl.className = 'muted status-label status-logged'
       } else {
-        // 空闲状态
         els.statusEl.textContent = '空闲'
         els.statusEl.title = ''
         els.statusEl.className = 'muted status-label status-idle'

@@ -313,6 +313,8 @@ func (app *App) checkProxies() error {
 
 	startTime := time.Now()
 
+	loadHistoricalCheckRate() // 注入历史速率后再开始检测
+
 	results, err := check.Check()
 	if err != nil {
 		return fmt.Errorf("检测代理失败: %w", err)

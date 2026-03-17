@@ -352,6 +352,7 @@ func (pc *ProxyChecker) renderProgressString() string {
 	currentChecked := int(Progress.Load())
 	total := int(ProxyCount.Load())
 	available := pc.available.Load()
+	etaSec := ETASeconds.Load()
 	step := ""
 
 	// 获取阶段名称
@@ -361,14 +362,12 @@ func (pc *ProxyChecker) renderProgressString() string {
 
 	var percent float64
 	if total == 0 {
-		percent = 0                // total为0时进度为0，除非 finalized
-		if ProcessResults.Load() { // 借用 check.go 里的全局变量判断是否结束
+		if ProcessResults.Load() {
 			percent = 100
 		}
 	} else {
 		percent = float64(currentChecked) / float64(total) * 100
 	}
-
 	if percent < 0 {
 		percent = 0
 	}
@@ -379,14 +378,40 @@ func (pc *ProxyChecker) renderProgressString() string {
 	barWidth := 40
 	barFilled := int(percent / 100 * float64(barWidth))
 
-	// 格式化输出：增加了 [阶段名]
-	// \r 清空当前行
-	return fmt.Sprintf("\r%s: [%-*s] %.1f%% (%d/%d) 可用: %d",
+	// ETA 后缀：-1=计算中, 0=完成/空闲不显示, >0=剩余时间
+	etaSuffix := ""
+	switch {
+	case etaSec == -1:
+		etaSuffix = " ETA: \033[90m--:--\033[0m"
+	case etaSec > 0:
+		etaSuffix = " ETA: \033[36m" + formatEta(etaSec) + "\033[0m"
+	}
+
+	return fmt.Sprintf("\r%s: [%-*s] %.1f%% (%d/%d) 可用: \033[32m%d\033[0m%s",
 		step,
 		barWidth,
 		strings.Repeat("=", barFilled)+">",
 		percent,
 		currentChecked,
 		total,
-		available)
+		available,
+		etaSuffix,
+	)
+}
+
+func formatEta(sec int64) string {
+	if sec <= 0 {
+		return "0s"
+	}
+	h := sec / 3600
+	m := (sec % 3600) / 60
+	s := sec % 60
+	switch {
+	case h > 0:
+		return fmt.Sprintf("%dh%02dm%02ds", h, m, s)
+	case m > 0:
+		return fmt.Sprintf("%dm%02ds", m, s)
+	default:
+		return fmt.Sprintf("%ds", s)
+	}
 }

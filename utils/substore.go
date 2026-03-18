@@ -183,16 +183,29 @@ func patchDisabled(raw json.RawMessage, disabled bool) (any, error) {
 // buildScpOps 根据配置生成由本程序管理的 SCP 操作列表。
 //
 // 执行顺序：
-//  1. Resolve Domain —— DNS 解析（NodeSplit=true 时自动开启）
-//  2. Node Split     —— 裂变，依赖 ① 结果
-//  3. Regex Filter   —— 正则筛选（白名单/黑名单）
+//  1. Regex Filter   —— 正则筛选（白名单/黑名单）
+//  2. Resolve Domain —— DNS 解析（NodeSplit=true 时自动开启）
+//  3. Node Split     —— 裂变，依赖 ① 结果
 //  4. Regex Sort     —— 正则排序
 func buildScpOps(cfg config.SubProcessConfig) []any {
 	needResolve := cfg.ResolveDomain || cfg.NodeSplit
 
 	var ops []any
 
-	// ① Resolve Domain
+	// 1. Regex Filter
+	if len(cfg.RegexFilter) > 0 {
+		ops = append(ops, ScriptOperator{
+			Type:       "Regex Filter",
+			CustomName: "正则筛选",
+			ID:         newOperatorID(),
+			Args: Args{
+				"keep":  cfg.RegexFilterKeep,
+				"regex": sanitizeRegexList(cfg.RegexFilter),
+			},
+		})
+	}
+
+	// 2. Resolve Domain
 	if needResolve {
 		ops = append(ops, ScriptOperator{
 			Type:       "Resolve Domain Operator",
@@ -209,7 +222,7 @@ func buildScpOps(cfg config.SubProcessConfig) []any {
 		})
 	}
 
-	// ② Node Split
+	// 3. Node Split
 	if cfg.NodeSplit {
 		ops = append(ops, ScriptOperator{
 			Type:       "Script Operator",
@@ -222,20 +235,7 @@ func buildScpOps(cfg config.SubProcessConfig) []any {
 		})
 	}
 
-	// ③ Regex Filter
-	if len(cfg.RegexFilter) > 0 {
-		ops = append(ops, ScriptOperator{
-			Type:       "Regex Filter",
-			CustomName: "正则筛选",
-			ID:         newOperatorID(),
-			Args: Args{
-				"keep":  cfg.RegexFilterKeep,
-				"regex": sanitizeRegexList(cfg.RegexFilter),
-			},
-		})
-	}
-
-	// ④ Regex Sort
+	// 4 Regex Sort
 	if len(cfg.RegexSort) > 0 {
 		ops = append(ops, ScriptOperator{
 			Type:       "Regex Sort Operator",
@@ -359,7 +359,7 @@ func mergeSubProcess(existing []json.RawMessage, scpOps []any, cfg config.SubPro
 			CustomName: "注入订阅流量信息节点",
 			ID:         newOperatorID(), // 带 SCP ID，下次由 isSubInfoScpOperator 识别保留
 			Args: Args{
-				"content": WarpURL(defaultSubInfoURL, IsGithubProxy) ,
+				"content": WarpURL(defaultSubInfoURL, IsGithubProxy),
 				"mode":    "link",
 				"arguments": Args{
 					"showLastUpdate": "true",

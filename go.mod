@@ -4,6 +4,7 @@ go 1.26
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/biter777/countries v1.7.5
 	github.com/docker/go-units v0.5.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.12.0

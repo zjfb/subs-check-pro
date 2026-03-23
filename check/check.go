@@ -69,7 +69,7 @@ type Result struct {
 	Google         bool
 	Cloudflare     bool
 	Disney         bool
-	Gemini         bool
+	Gemini         platform.GeminiStatus
 	TikTok         string
 	IP             string
 	IPRisk         string
@@ -844,8 +844,8 @@ func mediaCheck(job *ProxyJob, plat string, db *maxminddb.Reader, ctx context.Co
 			job.Result.Disney = true
 		}
 	case "gemini":
-		if ok, _ := platform.CheckGemini(job.Client.Client); ok {
-			job.Result.Gemini = true
+		if status, err := platform.CheckGemini(job.Client.Client); err == nil {
+			job.Result.Gemini = status
 		}
 	case "tiktok":
 		if region, _ := platform.CheckTikTok(job.Client.Client); region != "" {
@@ -905,7 +905,9 @@ func (pc *ProxyChecker) updateProxyName(res *Result, httpClient *ProxyClient, sp
 
 	if config.GlobalConfig.MediaCheck {
 		// 移除旧标签
-		name = regexp.MustCompile(`\s*\|(?:NF|D\+|GPT⁺|GPT|CP⁺|CP|GM|X|YT|KeepSucced|KeepHistory|KeepSuccess|YT-[^|]+|TK|TK-[^|]+|\d+%)`).ReplaceAllString(name, "")
+		name = regexp.MustCompile(
+			`\s*\|(?:NF|D\+|GPT[⁺]?|CP[⁻]?|GM[⁺]?[ˀ]?(?:-[A-Z]{2})?|X|YT(?:-[^|]+)?|TK(?:-[^|]+)?|\d+%)`).
+			ReplaceAllString(name, "")
 	}
 
 	// 平台标签（按用户配置顺序）
@@ -936,8 +938,24 @@ func (pc *ProxyChecker) updateProxyName(res *Result, httpClient *ProxyClient, sp
 				tags = append(tags, "D+")
 			}
 		case "gemini":
-			if res.Gemini {
-				tags = append(tags, "GM")
+			g := res.Gemini
+			if g.Region == "" {
+				break
+			}
+			switch g.Access {
+			case platform.AccessBlocked:
+				// 明确封锁，不生成标签
+			case platform.AccessSuspect:
+				tags = append(tags, "GMˀ")
+			case platform.AccessNormal:
+				tag := "GM"
+				if g.IsEU {
+					tag = "GM⁻"
+				}
+				if g.Region != res.Country {
+					tag = fmt.Sprintf("%s-%s", tag, g.Region)
+				}
+				tags = append(tags, tag)
 			}
 		case "iprisk":
 			if res.IPRisk != "" {

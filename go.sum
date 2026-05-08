@@ -278,12 +278,14 @@ github.com/sina-ghaderi/rabaead v0.0.0-20220730151906-ab6e06b96e8c h1:DjKMC30y6y
 github.com/sina-ghaderi/rabaead v0.0.0-20220730151906-ab6e06b96e8c/go.mod h1:NV/a66PhhWYVmUMaotlXJ8fIEFB98u+c8l/CQIEFLrU=
 github.com/sina-ghaderi/rabbitio v0.0.0-20220730151941-9ce26f4f872e h1:ur8uMsPIFG3i4Gi093BQITvwH9znsz2VUZmnmwHvpIo=
 github.com/sina-ghaderi/rabbitio v0.0.0-20220730151941-9ce26f4f872e/go.mod h1:+e5fBW3bpPyo+3uLo513gIUblc03egGjMM0+5GKbzK8=
-github.com/sinspired/checkip v0.3.2 h1:gE0BHueS7Wl1MZtMrJNV65pAlXdYjyciTHoKDm67XtQ=
-github.com/sinspired/checkip v0.3.2/go.mod h1:np3QQF4pBLyXI4/Xe5Iuo59IjUIbv89TeiFx+7VC5AY=
+github.com/sinspired/checkip v0.4.0 h1:eJjKN7NR25FwNaKGX4TvTnYjU0yWoHKPIqzDtXaShqc=
+github.com/sinspired/checkip v0.4.0/go.mod h1:axHafS0LmJPNyNCuzLTrOFfy1cV+tBvvp0D3TgZ40YU=
 github.com/sinspired/go-selfupdate v0.0.0-20260302091346-9011365a8031 h1:WEymi95OkhLl/b0cO7kAfMaomTN35SYDwqcl04FKZE4=
 github.com/sinspired/go-selfupdate v0.0.0-20260302091346-9011365a8031/go.mod h1:uSJbNWmEvM9P7f5sxebfeirzHwQbR6lRkSSRaXzE5jo=
 github.com/sirupsen/logrus v1.9.4 h1:TsZE7l11zFCLZnZ+teH4Umoq5BhEIfIzfRDZ1Uzql2w=
 github.com/sirupsen/logrus v1.9.4/go.mod h1:ftWc9WdOfJ0a92nsE2jF5u5ZwH8Bv2zdeOC42RjbV2g=
+github.com/sohaha/zlsgo v1.7.20 h1:1kE2/kFmi95Qz5bfZxe6td+40PJnuE8MzpKfQdGvtiw=
+github.com/sohaha/zlsgo v1.7.20/go.mod h1:7LViqB5ll09RnlU5V5AW0oBnqFg260/q+B/SGDNNdmQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
@@ -326,6 +328,8 @@ github.com/yosida95/uritemplate/v3 v3.0.2 h1:Ed3Oyj9yrmi9087+NczuL5BwkIc4wvTb5zI
 github.com/yosida95/uritemplate/v3 v3.0.2/go.mod h1:ILOh0sOhIJR3+L/8afwt/kE++YT040gmv5BQTMR2HP4=
 github.com/yusufpapurcu/wmi v1.2.4 h1:zFUKzehAFReQwLys1b/iSMl+JQGSCSjtVqQn9bBrPo0=
 github.com/yusufpapurcu/wmi v1.2.4/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
+github.com/zlsgo/useragent v0.0.0-20251119103354-4ad4f1fe3b88 h1:sd6vNLd7b8Y5jsuuQKwl77UGWgdsvr9Roli6evjTOqo=
+github.com/zlsgo/useragent v0.0.0-20251119103354-4ad4f1fe3b88/go.mod h1:46bde8QL1fZ47VCX80JEJc3L32JTZtf0twZ4eu1LO9k=
 gitlab.com/gitlab-org/api/client-go v1.46.0 h1:YxBWFZIFYKcGESCb9fpkwzouo+apyB9pr/XTWzNoL24=
 gitlab.com/gitlab-org/api/client-go v1.46.0/go.mod h1:FtgyU6g2HS5+fMhw6nLK96GBEEBx5MzntOiJWfIaiN8=
 gitlab.com/go-extension/aes-ccm v0.0.0-20230221065045-e58665ef23c7 h1:UNrDfkQqiEYzdMlNsVvBYOAJWZjdktqFE9tQh5BT2+4=

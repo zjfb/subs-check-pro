@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/config"
 )
 
 // Args 脚本操作参数

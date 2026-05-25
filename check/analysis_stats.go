@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sinspired/subs-check-pro/config"
-	proxyutils "github.com/sinspired/subs-check-pro/proxy"
-	"github.com/sinspired/subs-check-pro/save/method"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	proxyutils "github.com/sinspired/subs-check-pro/v2/proxy"
+	"github.com/sinspired/subs-check-pro/v2/save/method"
 )
 
 var (

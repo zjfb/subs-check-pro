@@ -18,13 +18,13 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/robfig/cron/v3"
-	"github.com/sinspired/subs-check-pro/app/monitor"
-	"github.com/sinspired/subs-check-pro/assets"
-	"github.com/sinspired/subs-check-pro/check"
-	"github.com/sinspired/subs-check-pro/config"
-	proxyutils "github.com/sinspired/subs-check-pro/proxy"
-	"github.com/sinspired/subs-check-pro/save"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/app/monitor"
+	"github.com/sinspired/subs-check-pro/v2/assets"
+	"github.com/sinspired/subs-check-pro/v2/check"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	proxyutils "github.com/sinspired/subs-check-pro/v2/proxy"
+	"github.com/sinspired/subs-check-pro/v2/save"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 // App 结构体用于管理应用程序状态

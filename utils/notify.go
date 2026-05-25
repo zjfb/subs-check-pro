@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/config"
 	"golang.org/x/net/http2"
 )
 
@@ -36,7 +36,7 @@ const (
 	retryDelay    = 500 * time.Millisecond // 重试等待间隔
 
 	FallbackProxy = ""                                                                                             // 兜底代理
-	RepoURL       = "https://github.com/sinspired/subs-check-pro"                                                  // 仓库地址
+	RepoURL       = "https://github.com/sinspired/subs-check-pro/v2"                                                  // 仓库地址
 	IconURL       = "https://raw.githubusercontent.com/sinspired/subs-check-pro/main/app/static/icon/icon-512.png" // 通用图标 URL
 )
 

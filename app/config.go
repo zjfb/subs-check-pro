@@ -11,9 +11,9 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/goccy/go-yaml"
-	"github.com/sinspired/subs-check-pro/assets"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/assets"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 // initConfigPath 初始化配置文件路径

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/goccy/go-yaml"
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/config"
 )
 
 func TestSaveCategoryMihomoFallsBackWithoutSubStore(t *testing.T) {

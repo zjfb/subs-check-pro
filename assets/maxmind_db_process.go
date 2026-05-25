@@ -16,9 +16,9 @@ import (
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/oschwald/maxminddb-golang/v2"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/save/method"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/save/method"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 type githubRelease struct {

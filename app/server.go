@@ -18,11 +18,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-yaml"
-	"github.com/sinspired/subs-check-pro/assets"
-	"github.com/sinspired/subs-check-pro/check"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/save/method"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/assets"
+	"github.com/sinspired/subs-check-pro/v2/check"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/save/method"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 const (

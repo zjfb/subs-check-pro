@@ -19,10 +19,10 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/samber/lo"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/proxy/parse"
-	"github.com/sinspired/subs-check-pro/save/method"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/proxy/parse"
+	"github.com/sinspired/subs-check-pro/v2/save/method"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 type SubUrls struct {

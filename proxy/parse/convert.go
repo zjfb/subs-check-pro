@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 
 	"github.com/samber/lo"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 
 	"net/url"
 

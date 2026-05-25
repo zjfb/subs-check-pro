@@ -2,9 +2,9 @@ package proxies
 
 import (
 	"fmt"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/save/method"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/save/method"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 	"log/slog"
 	"os"
 	"path/filepath"

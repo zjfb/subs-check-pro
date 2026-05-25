@@ -13,8 +13,8 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/creativeprojects/go-selfupdate"
-	"github.com/sinspired/subs-check-pro/config"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 var (
@@ -93,7 +93,7 @@ func detectSuccessNotify(currentVersion string, latest *selfupdate.Release) {
 	}
 
 	if needNotify {
-		fmt.Println("\033[32m🔎 详情查看: https://github.com/sinspired/subs-check-pro")
+		fmt.Println("\033[32m🔎 详情查看: https://github.com/sinspired/subs-check-pro/v2")
 
 		var downloadURL string
 		switch {

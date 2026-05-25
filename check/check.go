@@ -23,11 +23,11 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/oschwald/maxminddb-golang/v2"
-	"github.com/sinspired/subs-check-pro/assets"
-	"github.com/sinspired/subs-check-pro/check/platform"
-	"github.com/sinspired/subs-check-pro/config"
-	proxyutils "github.com/sinspired/subs-check-pro/proxy"
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/assets"
+	"github.com/sinspired/subs-check-pro/v2/check/platform"
+	"github.com/sinspired/subs-check-pro/v2/config"
+	proxyutils "github.com/sinspired/subs-check-pro/v2/proxy"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 )
 
 // 对外暴露变量，兼容GUI调用

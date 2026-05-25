@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/juju/ratelimit"
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/config"
 )
 
 type speedResult struct {

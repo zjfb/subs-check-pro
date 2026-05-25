@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/sinspired/subs-check-pro/utils"
+	"github.com/sinspired/subs-check-pro/v2/utils"
 	"net/url"
 	"strings"
 )

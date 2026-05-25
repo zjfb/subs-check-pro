@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/common/convert"
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/config"
 )
 
 var (

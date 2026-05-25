@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-yaml"
-	"github.com/sinspired/subs-check-pro/check"
-	"github.com/sinspired/subs-check-pro/config"
+	"github.com/sinspired/subs-check-pro/v2/check"
+	"github.com/sinspired/subs-check-pro/v2/config"
 )
 
 // reportFallback 从分析报告中提取的兜底数据
@@ -31,7 +31,7 @@ const (
 	expireUnix int64 = 3389731200 // time.Date(2077,6,1,0,0,0,0,time.UTC).Unix()
 
 	planName = "Subs-Check-Pro"
-	appURL   = "https://github.com/sinspired/subs-check-pro"
+	appURL   = "https://github.com/sinspired/subs-check-pro/v2"
 )
 
 // registerSubscriptionInfoRoute 注册公共订阅信息路由（无需鉴权）。

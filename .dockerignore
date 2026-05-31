@@ -14,6 +14,7 @@ test
 bin/*
 test_*.*
 
+dist/*
 output/*
 subs-check-pro*
 mihomo-check*

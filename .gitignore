@@ -4,6 +4,7 @@ mihomo.yaml
 .golangci-lint.yml
 test
 
+dist/*
 output/*
 subs-check-pro*
 mihomo-check*

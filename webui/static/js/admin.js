@@ -1704,6 +1704,11 @@ import { initQuickPreview } from './cfg-quickpreview.js';
    * @returns {string}
    */
   function colorize(line) {
+    // 先过滤掉 WebView2 内部日志
+    if (/\[WebView2\]/.test(line)) {
+      return ''   // 返回空字符串，前端就不会显示
+    }
+    
     // 1. 切分时间戳
     // const tsMatch = line.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
     const tsMatch = line.match(/^((\d{4}-)?\d{2}-\d{2} \d{2}:\d{2}:\d{2})/)
@@ -3088,7 +3093,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     // 其次才使用 localStorage 中显式"记住密钥"保存的 key。
     // 这样非随机 key 模式下不会跨会话自动登录，除非用户勾选了"记住密钥"。
     const sessionSaved = (() => { try { return sessionStorage.getItem('subscheck_session_key') } catch { return null } })()
-    const localSaved   = safeLS('subscheck_api_key')
+    const localSaved = safeLS('subscheck_api_key')
     const saved = sessionSaved || localSaved
 
     if (saved && els.apiKeyInput) els.apiKeyInput.value = saved
@@ -3127,7 +3132,7 @@ import { initQuickPreview } from './cfg-quickpreview.js';
     } catch (e) {
       sessionKey = null
       safeLS('subscheck_api_key', null)
-      try { sessionStorage.removeItem('subscheck_session_key') } catch {}
+      try { sessionStorage.removeItem('subscheck_session_key') } catch { }
       showLogin(true)
       setAuthUI(false)
     }

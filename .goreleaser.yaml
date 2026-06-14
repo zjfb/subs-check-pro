@@ -142,7 +142,7 @@ upx:
   - ids: [subs-check-pro]
     enabled: true
     goos: [linux]
-    goarch: [amd64, arm64]
+    goarch: [amd64, arm64, arm]
 
   - ids: [subs-check-pro]
     enabled: true
